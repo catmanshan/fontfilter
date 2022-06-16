@@ -1,0 +1,12 @@
+bin/
+obj/
+lib/
+doxygen/
+*.vim
+.*.swp
+tags
+tags.*
+compile_commands.json
+vgcore.*
+.cache
+*.supp
