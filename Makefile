@@ -33,10 +33,23 @@ release: dirs bin/test
 
 # test:
 
-bin/test: obj/test.o tyrant/lib/libtyrant.a
-	$(CC) -o $@ $^ $(DEPS_LIBS) $(DEBUG) $(DEFINES)
+bin/test: obj/test.o lib/libfontfilter.a tyrant/lib/libtyrant.a
+	$(CC) -o $@ $^ -Llib -lfontfilter $(DEPS_LIBS) $(DEBUG) $(DEFINES)
 
-obj/test.o: src/test.c
+obj/test.o: src/test.c $(LIB_HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEPS_CFLAGS) $(DEBUG) $(DEFINES)
+
+# fontfilter
+
+LIB_HEADERS = src/fontfilter.h tyrant/src/tyrant.h
+LIB_OBJS = obj/fontfilter.o
+
+lib/libfontfilter.a: $(LIB_OBJS) Makefile
+	[ -f $@ -a Makefile -nt $@ ] \
+		&& (rm $@ ; ar cqs $@ $(LIB_OBJS)) \
+		|| ar crs $@ $(LIB_OBJS)
+
+obj/fontfilter.o: src/fontfilter.c $(LIB_HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEPS_CFLAGS) $(DEBUG) $(DEFINES)
 
 # tyrant
