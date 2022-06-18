@@ -3,6 +3,9 @@ CFLAGS = $(WFLAGS) $(OPTIM)
 
 WFLAGS  := -Wall -Wextra -Wpedantic --std=c99
 
+DEPS_LIBS := `pkgconf --libs fontconfig`
+DEPS_CFLAGS := `pkgconf --cflags fontconfig | sed 's/-I/-isystem/g'`
+
 .PHONY: all
 all: debug
 
@@ -28,10 +31,10 @@ release: dirs bin/test
 # test:
 
 bin/test: obj/test.o
-	$(CC) -o $@ $^ $(DEBUG) $(DEFINES)
+	$(CC) -o $@ $^ $(DEPS_LIBS) $(DEBUG) $(DEFINES)
 
 obj/test.o: src/test.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(DEBUG) $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEPS_CFLAGS) $(DEBUG) $(DEFINES)
 
 # dirs
 
