@@ -32,6 +32,24 @@ struct FfTruthTable {
 	bool pf_qf;
 };
 
+//                                      PTQT  PTQF  PFQT  PFQF
+#define FF_ALWAYS_FALSE (FfTruthTable){    0,    0,    0,    0 }
+#define FF_NOR          (FfTruthTable){    0,    0,    0,    1 }
+#define FF_Q_NOT_P      (FfTruthTable){    0,    0,    1,    0 }
+#define FF_NOT_P        (FfTruthTable){    0,    0,    1,    1 }
+#define FF_P_NOT_Q      (FfTruthTable){    0,    1,    0,    0 }
+#define FF_NOT_Q        (FfTruthTable){    0,    1,    0,    1 }
+#define FF_XOR          (FfTruthTable){    0,    1,    1,    0 }
+#define FF_NAND         (FfTruthTable){    0,    1,    1,    1 }
+#define FF_AND          (FfTruthTable){    1,    0,    0,    0 }
+#define FF_XNOR         (FfTruthTable){    1,    0,    0,    1 }
+#define FF_Q            (FfTruthTable){    1,    0,    1,    0 }
+#define FF_IF_P_THEN_Q  (FfTruthTable){    1,    0,    1,    1 }
+#define FF_P            (FfTruthTable){    1,    1,    0,    0 }
+#define FF_IF_Q_THEN_P  (FfTruthTable){    1,    1,    0,    1 }
+#define FF_OR           (FfTruthTable){    1,    1,    1,    0 }
+#define FF_ALWAYS_TRUE  (FfTruthTable){    1,    1,    1,    1 }
+
 struct FfComparison {
 	const char *object;
 	FcValue value;
