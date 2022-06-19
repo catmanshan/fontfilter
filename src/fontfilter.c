@@ -8,6 +8,11 @@
 
 #include <tyrant.h>
 
+static void destroy_condition(FfCondition *condition);
+
+static bool inc_ref_count(unsigned long long *ref_count);
+static bool dec_ref_count(unsigned long long *ref_count);
+
 FfCondition *ff_compare(const char *object, FfOperation operation, ...)
 {
 	va_list va;
@@ -36,6 +41,8 @@ FfCondition *ff_compare_value(const char *object, FfOperation operation,
 			.value = value,
 			.operation = operation
 		},
+
+		.ref_count = 1
 	};
 	return condition;
 }
@@ -45,7 +52,15 @@ FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 {
 	FfCondition *condition = tyrant_alloc(sizeof(*condition));
 	if (condition == NULL) {
-		return NULL;
+		goto err_exit;
+	}
+
+	if (ff_condition_ref(p) == NULL) {
+		goto err_free_condition;
+	}
+
+	if (ff_condition_ref(q) == NULL) {
+		goto err_unref_p;
 	}
 
 	*condition = (FfCondition){
@@ -54,13 +69,42 @@ FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 			.p = p,
 			.q = q,
 			.truth_table = truth_table
-		}
+		},
+		.ref_count = 1
 	};
 	return condition;
+
+err_unref_p:
+	ff_condition_unref(p);
+err_free_condition:
+	tyrant_free(condition);
+err_exit:
+	return NULL;
 }
 
-void ff_condition_destroy(FfCondition *condition)
+FfCondition *ff_condition_ref(FfCondition *condition)
 {
+	if (inc_ref_count(&condition->ref_count)) {
+		return condition;
+	}
+
+	return NULL;
+}
+
+void ff_condition_unref(FfCondition *condition)
+{
+	if (dec_ref_count(&condition->ref_count) && condition->ref_count == 0) {
+		destroy_condition(condition);
+	}
+}
+
+void destroy_condition(FfCondition *condition)
+{
+	if (condition->type == FF_COMPOSITION) {
+		ff_condition_unref(condition->value.composition.p);
+		ff_condition_unref(condition->value.composition.q);
+	}
+
 	tyrant_free(condition);
 }
 
@@ -116,4 +160,25 @@ FcValue ff_create_fc_value_va(FcType type, va_list va)
 	}
 
 	return value;
+}
+
+bool inc_ref_count(unsigned long long *ref_count)
+{
+	if (*ref_count == ULLONG_MAX) {
+		return false;
+	}
+
+	++*ref_count;
+	return true;
+}
+
+bool dec_ref_count(unsigned long long *ref_count)
+{
+	if (*ref_count == 0) {
+		return false;
+	}
+
+	--*ref_count;
+
+	return true;
 }

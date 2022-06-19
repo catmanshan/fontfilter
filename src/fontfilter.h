@@ -71,16 +71,18 @@ union FfConditionValue {
 struct FfCondition {
 	FfConditionType type;
 	FfConditionValue value;
+
+	unsigned long long ref_count;
 };
 
 FfCondition *ff_compare(const char *object, FfOperation operation, ...);
 FfCondition *ff_compare_value(const char *object, FfOperation operation,
 		FcValue value);
-
 FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 		FfCondition *q);
 
-void ff_condition_destroy(FfCondition *condition);
+FfCondition *ff_condition_ref(FfCondition *condition);
+void ff_condition_unref(FfCondition *condition);
 
 FcValue ff_create_fc_value(FcType type, ...);
 FcValue ff_create_fc_value_va(FcType type, va_list va);
