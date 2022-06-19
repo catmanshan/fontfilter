@@ -6,6 +6,9 @@
 
 #include <fontconfig/fontconfig.h>
 
+#define FF_SUCCESS 0
+#define FF_FAILURE (-1)
+
 typedef enum FfConditionType {
 	FF_COMPARISON,
 	FF_COMPOSITION
@@ -25,6 +28,7 @@ typedef struct FfComparison FfComparison;
 typedef struct FfComposition FfComposition;
 typedef union FfConditionValue FfConditionValue;
 typedef struct FfCondition FfCondition;
+typedef struct FfList FfList;
 
 struct FfTruthTable {
 	bool pt_qt;
@@ -75,6 +79,12 @@ struct FfCondition {
 	unsigned long long ref_count;
 };
 
+struct FfList {
+	FfCondition **conditions;
+	unsigned long long len;
+	unsigned long long cap;
+};
+
 FfCondition *ff_compare(const char *object, FfOperation operation, ...);
 FfCondition *ff_compare_value(const char *object, FfOperation operation,
 		FcValue value);
@@ -83,6 +93,11 @@ FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 
 FfCondition *ff_condition_ref(FfCondition *condition);
 void ff_condition_unref(FfCondition *condition);
+
+FfList ff_list_create(int *ret_status);
+FfList ff_list_create_with_cap(int cap, int *ret_status);
+void ff_list_destroy(FfList list);
+bool ff_list_add(FfList *list, FfCondition *condition);
 
 FcValue ff_create_fc_value(FcType type, ...);
 FcValue ff_create_fc_value_va(FcType type, va_list va);

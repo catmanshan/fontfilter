@@ -8,8 +8,9 @@
 
 #include <tyrant.h>
 
-static void destroy_condition(FfCondition *condition);
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+static void destroy_condition(FfCondition *condition);
 static bool inc_ref_count(unsigned long long *ref_count);
 static bool dec_ref_count(unsigned long long *ref_count);
 
@@ -106,6 +107,64 @@ void destroy_condition(FfCondition *condition)
 	}
 
 	tyrant_free(condition);
+}
+
+FfList ff_list_create(int *ret_status)
+{
+	return ff_list_create_with_cap(8, ret_status);
+}
+
+FfList ff_list_create_with_cap(int cap, int *ret_status)
+{
+	FfCondition **conditions = TYRANT_ALLOC_ARR(conditions, cap);
+	if (conditions == NULL) {
+		*ret_status = FF_FAILURE;
+	}
+
+	*ret_status = FF_SUCCESS;
+	return (FfList){
+		.conditions = conditions,
+		.cap = cap,
+		.len = 0
+	};
+}
+
+void ff_list_destroy(FfList list)
+{
+	for (unsigned long long i = 0; i < list.len; ++i) {
+		ff_condition_unref(list.conditions[i]);
+	}
+
+	tyrant_free(list.conditions);
+}
+
+bool ff_list_add(FfList *list, FfCondition *condition)
+{
+	if (list->len == list->cap) {
+		if (list->cap == ULLONG_MAX) {
+			return NULL;
+		}
+
+		unsigned long long cap;
+		if (list->cap > ULLONG_MAX / 2) {
+			cap = ULLONG_MAX;
+		} else {
+			cap = list->len * 2;
+		}
+
+		bool success;
+		list->conditions = TYRANT_REALLOC_ARR(list->conditions, cap,
+				&success);
+		if (!success) {
+			return false;
+		}
+
+		list->cap = cap;
+	}
+
+	list->conditions[list->len++] = ff_condition_ref(condition);
+
+	return true;
 }
 
 FcValue ff_create_fc_value(FcType type, ...)
