@@ -77,6 +77,9 @@ FfCondition ff_compare(const char *object, FfOperation operation, ...);
 FfCondition ff_compare_value(const char *object, FfOperation operation,
 		FcValue value);
 
+FfCondition ff_compose(FfCondition *p, FfTruthTable truth_table,
+		FfCondition *q);
+
 FcValue ff_create_fc_value(FcType type, ...);
 FcValue ff_create_fc_value_va(FcType type, va_list va);
 

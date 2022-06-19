@@ -30,6 +30,18 @@ FfCondition ff_compare_value(const char *object, FfOperation operation, FcValue 
 	};
 }
 
+FfCondition ff_compose(FfCondition *p, FfTruthTable truth_table, FfCondition *q)
+{
+	return (FfCondition){
+		.type = FF_COMPOSITION,
+		.value.composition = (FfComposition){
+			.p = p,
+			.q = q,
+			.truth_table = truth_table
+		}
+	};
+}
+
 FcValue ff_create_fc_value(FcType type, ...)
 {
 	va_list va;
