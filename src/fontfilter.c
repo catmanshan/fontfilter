@@ -2,10 +2,13 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <fontconfig/fontconfig.h>
 
-FfCondition ff_compare(const char *object, FfOperation operation, ...)
+#include <tyrant.h>
+
+FfCondition *ff_compare(const char *object, FfOperation operation, ...)
 {
 	va_list va;
 	va_start(va, operation);
@@ -18,9 +21,15 @@ FfCondition ff_compare(const char *object, FfOperation operation, ...)
 	return ff_compare_value(object, operation, value);
 }
 
-FfCondition ff_compare_value(const char *object, FfOperation operation, FcValue value)
+FfCondition *ff_compare_value(const char *object, FfOperation operation,
+		FcValue value)
 {
-	return (FfCondition){
+	FfCondition *condition = tyrant_alloc(sizeof(*condition));
+	if (condition == NULL) {
+		return NULL;
+	}
+
+	*condition = (FfCondition){
 		.type = FF_COMPARISON,
 		.value.comparison = (FfComparison){
 			.object = object,
@@ -28,11 +37,18 @@ FfCondition ff_compare_value(const char *object, FfOperation operation, FcValue 
 			.operation = operation
 		},
 	};
+	return condition;
 }
 
-FfCondition ff_compose(FfCondition *p, FfTruthTable truth_table, FfCondition *q)
+FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
+		FfCondition *q)
 {
-	return (FfCondition){
+	FfCondition *condition = tyrant_alloc(sizeof(*condition));
+	if (condition == NULL) {
+		return NULL;
+	}
+
+	*condition = (FfCondition){
 		.type = FF_COMPOSITION,
 		.value.composition = (FfComposition){
 			.p = p,
@@ -40,6 +56,12 @@ FfCondition ff_compose(FfCondition *p, FfTruthTable truth_table, FfCondition *q)
 			.truth_table = truth_table
 		}
 	};
+	return condition;
+}
+
+void ff_condition_destroy(FfCondition *condition)
+{
+	tyrant_free(condition);
 }
 
 FcValue ff_create_fc_value(FcType type, ...)
