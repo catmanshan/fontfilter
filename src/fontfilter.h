@@ -1,6 +1,7 @@
 #ifndef fontfilter_h
 #define fontfilter_h
 
+#include <stdarg.h>
 #include <stdbool.h>
 
 #include <fontconfig/fontconfig.h>
@@ -71,5 +72,12 @@ struct FfCondition {
 	FfConditionType type;
 	FfConditionValue value;
 };
+
+FfCondition ff_compare(const char *object, FfOperation operation, ...);
+FfCondition ff_compare_value(const char *object, FfOperation operation,
+		FcValue value);
+
+FcValue ff_create_fc_value(FcType type, ...);
+FcValue ff_create_fc_value_va(FcType type, va_list va);
 
 #endif // fontfilter_h
