@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <fontconfig/fontconfig.h>
 
@@ -76,13 +77,13 @@ struct FfCondition {
 	FfConditionType type;
 	FfConditionValue value;
 
-	unsigned long long ref_count;
+	size_t ref_count;
 };
 
 struct FfList {
 	FfCondition **conditions;
-	unsigned long long len;
-	unsigned long long cap;
+	size_t len;
+	size_t cap;
 };
 
 FfCondition *ff_compare(const char *object, FfOperation operation, ...);

@@ -11,8 +11,8 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 static void destroy_condition(FfCondition *condition);
-static bool inc_ref_count(unsigned long long *ref_count);
-static bool dec_ref_count(unsigned long long *ref_count);
+static bool inc_ref_count(size_t *ref_count);
+static bool dec_ref_count(size_t *ref_count);
 
 FfCondition *ff_compare(const char *object, FfOperation operation, ...)
 {
@@ -142,7 +142,7 @@ FfList ff_list_create_with_cap(int cap, int *ret_status)
 
 void ff_list_destroy(FfList list)
 {
-	for (unsigned long long i = 0; i < list.len; ++i) {
+	for (size_t i = 0; i < list.len; ++i) {
 		ff_condition_unref(list.conditions[i]);
 	}
 
@@ -156,7 +156,7 @@ bool ff_list_add(FfList *list, FfCondition *condition)
 			return NULL;
 		}
 
-		unsigned long long cap;
+		size_t cap;
 		if (list->cap > ULLONG_MAX / 2) {
 			cap = ULLONG_MAX;
 		} else {
@@ -232,7 +232,7 @@ FcValue ff_create_fc_value_va(FcType type, va_list va)
 	return value;
 }
 
-bool inc_ref_count(unsigned long long *ref_count)
+bool inc_ref_count(size_t *ref_count)
 {
 	if (*ref_count == ULLONG_MAX) {
 		return false;
@@ -242,7 +242,7 @@ bool inc_ref_count(unsigned long long *ref_count)
 	return true;
 }
 
-bool dec_ref_count(unsigned long long *ref_count)
+bool dec_ref_count(size_t *ref_count)
 {
 	if (*ref_count == 0) {
 		return false;
