@@ -91,6 +91,9 @@ FfCondition *ff_compare_value(const char *object, FfOperation operation,
 FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 		FfCondition *q);
 
+FfCondition *ff_compose_unref(FfCondition *p, FfTruthTable truth_table,
+		FfCondition *q);
+
 FfCondition *ff_condition_ref(FfCondition *condition);
 void ff_condition_unref(FfCondition *condition);
 

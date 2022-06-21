@@ -83,6 +83,17 @@ err_exit:
 	return NULL;
 }
 
+FfCondition *ff_compose_unref(FfCondition *p, FfTruthTable truth_table,
+		FfCondition *q)
+{
+	FfCondition *condition = ff_compose(p, truth_table, q);
+
+	ff_condition_unref(p);
+	ff_condition_unref(q);
+
+	return condition;
+}
+
 FfCondition *ff_condition_ref(FfCondition *condition)
 {
 	if (inc_ref_count(&condition->ref_count)) {
