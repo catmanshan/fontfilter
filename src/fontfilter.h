@@ -106,4 +106,9 @@ bool ff_list_add(FfList *list, FfCondition *condition);
 FcValue ff_create_fc_value(FcType type, ...);
 FcValue ff_create_fc_value_va(FcType type, va_list va);
 
+bool ff_condition_test_fc_pattern(FfCondition *condition, FcPattern *pattern);
+bool ff_list_test_fc_pattern(FfList list, FcPattern *pattern);
+
+bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q);
+
 #endif // fontfilter_h

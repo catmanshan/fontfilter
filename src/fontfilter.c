@@ -13,6 +13,9 @@
 static void destroy_condition(FfCondition *condition);
 static bool inc_ref_count(size_t *ref_count);
 static bool dec_ref_count(size_t *ref_count);
+static bool test_comparison(FfComparison comparison, FcPattern *pattern);
+static bool test_composition(FfComposition composition, FcPattern *pattern);
+static bool test_comparison_for_value(FfComparison comparison, FcValue value);
 
 FfCondition *ff_compare(const char *object, FfOperation operation, ...)
 {
@@ -118,6 +121,27 @@ void destroy_condition(FfCondition *condition)
 	}
 
 	tyrant_free(condition);
+}
+
+bool inc_ref_count(size_t *ref_count)
+{
+	if (*ref_count == ULLONG_MAX) {
+		return false;
+	}
+
+	++*ref_count;
+	return true;
+}
+
+bool dec_ref_count(size_t *ref_count)
+{
+	if (*ref_count == 0) {
+		return false;
+	}
+
+	--*ref_count;
+
+	return true;
 }
 
 FfList ff_list_create(int *ret_status)
@@ -232,23 +256,97 @@ FcValue ff_create_fc_value_va(FcType type, va_list va)
 	return value;
 }
 
-bool inc_ref_count(size_t *ref_count)
+bool ff_condition_test_fc_pattern(FfCondition *condition, FcPattern *pattern)
 {
-	if (*ref_count == ULLONG_MAX) {
+	switch (condition->type) {
+	case FF_COMPARISON:
+		return test_comparison(condition->value.comparison, pattern);
+	case FF_COMPOSITION:
+		return test_composition(condition->value.composition, pattern);
+	default:
 		return false;
 	}
+}
 
-	++*ref_count;
+bool ff_list_test_fc_pattern(FfList list, FcPattern *pattern)
+{
+	for (size_t i = 0; i < list.len; ++i) {
+		FfCondition *condition = list.conditions[i];
+		if (!ff_condition_test_fc_pattern(condition, pattern)) {
+			return false;
+		}
+	}
+
 	return true;
 }
 
-bool dec_ref_count(size_t *ref_count)
+bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q)
 {
-	if (*ref_count == 0) {
+	if (p && q) {
+		return truth_table.pt_qt;
+	}
+	if (p && !q) {
+		return truth_table.pt_qf;
+	}
+	if (!p && q) {
+		return truth_table.pf_qt;
+	}
+	return truth_table.pf_qf;
+}
+
+bool test_comparison(FfComparison comparison, FcPattern *pattern)
+{
+	FcValue value;
+	FcResult result = FcPatternGet(pattern, comparison.object, 0, &value);
+	if (result != FcResultMatch) {
 		return false;
 	}
 
-	--*ref_count;
+	return test_comparison_for_value(comparison, value);
+}
 
-	return true;
+bool test_composition(FfComposition composition, FcPattern *pattern)
+{
+	bool p_passed = ff_condition_test_fc_pattern(composition.p, pattern);
+	bool q_passed = ff_condition_test_fc_pattern(composition.q, pattern);
+
+	return ff_truth_table_eval(composition.truth_table, p_passed, q_passed);
+}
+
+bool test_comparison_for_value(FfComparison comparison, FcValue value)
+{
+	FcValue a = value;
+	FcValue b = comparison.value;
+	FfOperation operation = comparison.operation;
+
+	bool a_is_real = a.type == FcTypeInteger || a.type == FcTypeDouble;
+	bool b_is_real = b.type == FcTypeInteger || b.type == FcTypeDouble;
+	if (a_is_real && b_is_real) {
+		double a_d = a.type == FcTypeDouble ? a.u.d : a.u.i;
+		double b_d = b.type == FcTypeDouble ? b.u.d : b.u.i;
+
+		switch (operation) {
+		case FF_NOT_EQUAL:
+			return a_d != b_d;
+		case FF_EQUAL:
+			return a_d == b_d;
+		case FF_LESS_THAN:
+			return a_d < b_d;
+		case FF_GREATER_THAN:
+			return a_d > b_d;
+		case FF_LESS_THAN_EQUAL:
+			return a_d <= b_d;
+		case FF_GREATER_THAN_EQUAL:
+			return a_d >= b_d;
+		}
+	}
+
+	switch (operation) {
+	case FF_NOT_EQUAL:
+		return !FcValueEqual(a, b);
+	case FF_EQUAL:
+		return FcValueEqual(a, b);
+	default:
+		return false;
+	}
 }
