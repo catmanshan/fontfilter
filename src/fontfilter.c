@@ -280,6 +280,59 @@ bool ff_list_test_fc_pattern(FfList list, FcPattern *pattern)
 	return true;
 }
 
+FcFontSet *ff_condition_filter(FfCondition *condition, FcFontSet *set)
+{
+	FcFontSet *filtered = FcFontSetCreate();
+	if (filtered == NULL) {
+		goto err_exit;
+	}
+
+	for (int i = 0; i < set->nfont; ++i) {
+		FcPattern *font = set->fonts[i];
+
+		if (ff_condition_test_fc_pattern(condition, font)) {
+			FcPatternReference(font);
+			bool success = FcFontSetAdd(filtered, font);
+			if (!success) {
+				goto err_destroy_filtered;
+			}
+		}
+	}
+
+	return filtered;
+
+err_destroy_filtered:
+	FcFontSetDestroy(filtered);
+err_exit:
+	return NULL;
+}
+
+FcFontSet *ff_list_filter(FfList list, FcFontSet *set)
+{
+	FcFontSet *filtered = FcFontSetCreate();
+	if (filtered == NULL) {
+		goto err_exit;
+	}
+
+	for (int i = 0; i < set->nfont; ++i) {
+		FcPattern *font = set->fonts[i];
+		if (ff_list_test_fc_pattern(list, font)) {
+			FcPatternReference(font);
+			bool success = FcFontSetAdd(filtered, font);
+			if (!success) {
+				goto err_destroy_filtered;
+			}
+		}
+	}
+
+	return filtered;
+
+err_destroy_filtered:
+	FcFontSetDestroy(filtered);
+err_exit:
+	return NULL;
+}
+
 bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q)
 {
 	if (p && q) {
