@@ -20,13 +20,9 @@ int main()
 	FfList list = ff_list_create(&status);
 	assert(status == FF_SUCCESS);
 
-	ff_list_add(&list, not_proport);
-	ff_list_add(&list, bold);
-	ff_list_add(&list, italic);
-
-	ff_condition_unref(not_proport);
-	ff_condition_unref(bold);
-	ff_condition_unref(italic);
+	ff_list_add_unref(&list, not_proport);
+	ff_list_add_unref(&list, bold);
+	ff_list_add_unref(&list, italic);
 
 	FcFontSet *sys_fonts = FcConfigGetFonts(NULL, FcSetSystem);
 	assert(sys_fonts);

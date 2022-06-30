@@ -102,6 +102,7 @@ FfList ff_list_create(int *ret_status);
 FfList ff_list_create_with_cap(int cap, int *ret_status);
 void ff_list_destroy(FfList list);
 bool ff_list_add(FfList *list, FfCondition *condition);
+bool ff_list_add_unref(FfList *list, FfCondition *condition);
 
 FcValue ff_create_fc_value(FcType type, ...);
 FcValue ff_create_fc_value_va(FcType type, va_list va);

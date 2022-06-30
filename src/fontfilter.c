@@ -202,6 +202,15 @@ bool ff_list_add(FfList *list, FfCondition *condition)
 	return true;
 }
 
+bool ff_list_add_unref(FfList *list, FfCondition *condition)
+{
+	bool success = ff_list_add(list, condition);
+
+	ff_condition_unref(condition);
+
+	return success;
+}
+
 FcValue ff_create_fc_value(FcType type, ...)
 {
 	va_list va;
