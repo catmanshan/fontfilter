@@ -28,7 +28,26 @@ int main()
 	ff_condition_unref(bold);
 	ff_condition_unref(italic);
 
+	FcFontSet *sys_fonts = FcConfigGetFonts(NULL, FcSetSystem);
+	assert(sys_fonts);
+
+	FcFontSet *filtered = ff_list_filter(list, sys_fonts);
+
 	ff_list_destroy(list);
+
+	for (int i = 0; i < filtered->nfont; ++i) {
+		FcPattern *font = filtered->fonts[i];
+		FcChar8 *fmt = (FcChar8 *)"%{family=}\n"
+					  "%{style=}\n"
+					  "%{weight=}\n"
+					  "%{slant=}\n";
+
+		FcChar8 *str = FcPatternFormat(font, fmt);
+		printf("%s\n", str);
+		free(str);
+	}
+
+	FcFontSetDestroy(filtered);
 	
 	return EXIT_SUCCESS;
 }
