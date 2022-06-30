@@ -333,6 +333,44 @@ err_exit:
 	return NULL;
 }
 
+FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set)
+{
+	FcFontSet *filtered = FcFontSetCreate();
+	if (filtered == NULL) {
+		goto err_exit;
+	}
+
+	for (int i = 0; i < set->nfont; ++i) {
+		FcPattern *font = set->fonts[i];
+
+		FcPatternReference(font);
+		bool success = FcFontSetAdd(filtered, font);
+		if (success) {
+			goto err_destroy_filtered;
+		}
+	}
+
+	for (size_t i = 0; i < list.len; ++i) {
+		FfCondition *condition = list.conditions[i];
+		FcFontSet *test_set = ff_condition_filter(condition, filtered);
+		if (test_set == NULL) {
+			goto err_destroy_filtered;
+		}
+
+		if (test_set->nfont > 0) {
+			FcFontSetDestroy(filtered);
+			filtered = test_set;
+		}
+	}
+
+	return filtered;
+
+err_destroy_filtered:
+	FcFontSetDestroy(filtered);
+err_exit:
+	return NULL;
+}
+
 bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q)
 {
 	if (p && q) {
