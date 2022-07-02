@@ -15,62 +15,62 @@ typedef enum FfConditionType {
 	FF_COMPOSITION
 } FfConditionType;
 
-typedef enum FfOperation {
+typedef enum FfRelationalOperator {
 	FF_NOT_EQUAL = 0,
 	FF_EQUAL,
 	FF_LESS_THAN,
 	FF_GREATER_THAN,
 	FF_LESS_THAN_EQUAL,
 	FF_GREATER_THAN_EQUAL,
-} FfOperation;
+} FfRelationalOperator;
 
-typedef struct FfTruthTable FfTruthTable;
+typedef struct FfLogicalOperator FfLogicalOperator;
 typedef struct FfComparison FfComparison;
-typedef struct FfComposition FfComposition;
+typedef struct FfLogicalComposition FfLogicalComposition;
 typedef union FfConditionValue FfConditionValue;
 typedef struct FfCondition FfCondition;
 typedef struct FfList FfList;
 
-struct FfTruthTable {
+struct FfLogicalOperator {
 	bool pt_qt;
 	bool pt_qf;
 	bool pf_qt;
 	bool pf_qf;
 };
 
-//                                      PTQT  PTQF  PFQT  PFQF
-#define FF_ALWAYS_FALSE (FfTruthTable){    0,    0,    0,    0 }
-#define FF_NOR          (FfTruthTable){    0,    0,    0,    1 }
-#define FF_Q_NOT_P      (FfTruthTable){    0,    0,    1,    0 }
-#define FF_NOT_P        (FfTruthTable){    0,    0,    1,    1 }
-#define FF_P_NOT_Q      (FfTruthTable){    0,    1,    0,    0 }
-#define FF_NOT_Q        (FfTruthTable){    0,    1,    0,    1 }
-#define FF_XOR          (FfTruthTable){    0,    1,    1,    0 }
-#define FF_NAND         (FfTruthTable){    0,    1,    1,    1 }
-#define FF_AND          (FfTruthTable){    1,    0,    0,    0 }
-#define FF_XNOR         (FfTruthTable){    1,    0,    0,    1 }
-#define FF_Q            (FfTruthTable){    1,    0,    1,    0 }
-#define FF_IF_P_THEN_Q  (FfTruthTable){    1,    0,    1,    1 }
-#define FF_P            (FfTruthTable){    1,    1,    0,    0 }
-#define FF_IF_Q_THEN_P  (FfTruthTable){    1,    1,    0,    1 }
-#define FF_OR           (FfTruthTable){    1,    1,    1,    0 }
-#define FF_ALWAYS_TRUE  (FfTruthTable){    1,    1,    1,    1 }
+//                                           PTQT  PTQF  PFQT  PFQF
+#define FF_ALWAYS_FALSE (FfLogicalOperator){    0,    0,    0,    0 }
+#define FF_NOR          (FfLogicalOperator){    0,    0,    0,    1 }
+#define FF_Q_NOT_P      (FfLogicalOperator){    0,    0,    1,    0 }
+#define FF_NOT_P        (FfLogicalOperator){    0,    0,    1,    1 }
+#define FF_P_NOT_Q      (FfLogicalOperator){    0,    1,    0,    0 }
+#define FF_NOT_Q        (FfLogicalOperator){    0,    1,    0,    1 }
+#define FF_XOR          (FfLogicalOperator){    0,    1,    1,    0 }
+#define FF_NAND         (FfLogicalOperator){    0,    1,    1,    1 }
+#define FF_AND          (FfLogicalOperator){    1,    0,    0,    0 }
+#define FF_XNOR         (FfLogicalOperator){    1,    0,    0,    1 }
+#define FF_Q            (FfLogicalOperator){    1,    0,    1,    0 }
+#define FF_IF_P_THEN_Q  (FfLogicalOperator){    1,    0,    1,    1 }
+#define FF_P            (FfLogicalOperator){    1,    1,    0,    0 }
+#define FF_IF_Q_THEN_P  (FfLogicalOperator){    1,    1,    0,    1 }
+#define FF_OR           (FfLogicalOperator){    1,    1,    1,    0 }
+#define FF_ALWAYS_TRUE  (FfLogicalOperator){    1,    1,    1,    1 }
 
 struct FfComparison {
 	const char *object;
 	FcValue value;
-	FfOperation operation;
+	FfRelationalOperator operator;
 };
 
-struct FfComposition {
-	FfTruthTable truth_table;
+struct FfLogicalComposition {
+	FfLogicalOperator operator;
 	FfCondition *p;
 	FfCondition *q;
 };
 
 union FfConditionValue {
 	FfComparison comparison;
-	FfComposition composition;
+	FfLogicalComposition composition;
 };
 
 struct FfCondition {
@@ -86,13 +86,13 @@ struct FfList {
 	size_t cap;
 };
 
-FfCondition *ff_compare(const char *object, FfOperation operation, ...);
-FfCondition *ff_compare_value(const char *object, FfOperation operation,
+FfCondition *ff_compare(const char *object, FfRelationalOperator operator, ...);
+FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
 		FcValue value);
-FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
+FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
 		FfCondition *q);
 
-FfCondition *ff_compose_unref(FfCondition *p, FfTruthTable truth_table,
+FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator operator,
 		FfCondition *q);
 
 FfCondition *ff_condition_ref(FfCondition *condition);
@@ -115,6 +115,6 @@ FcFontSet *ff_list_filter(FfList list, FcFontSet *set);
 
 FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set);
 
-bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q);
+bool ff_eval_logical_operation(FfLogicalOperator operator, bool p, bool q);
 
 #endif // fontfilter_h

@@ -14,23 +14,24 @@ static void destroy_condition(FfCondition *condition);
 static bool inc_ref_count(size_t *ref_count);
 static bool dec_ref_count(size_t *ref_count);
 static bool test_comparison(FfComparison comparison, FcPattern *pattern);
-static bool test_composition(FfComposition composition, FcPattern *pattern);
+static bool test_composition(FfLogicalComposition composition,
+		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
 
-FfCondition *ff_compare(const char *object, FfOperation operation, ...)
+FfCondition *ff_compare(const char *object, FfRelationalOperator operator, ...)
 {
 	va_list va;
-	va_start(va, operation);
+	va_start(va, operator);
 
 	FcType type = FcNameGetObjectType(object)->type;
 	FcValue value = ff_create_fc_value_va(type, va);
 
 	va_end(va);
 
-	return ff_compare_value(object, operation, value);
+	return ff_compare_value(object, operator, value);
 }
 
-FfCondition *ff_compare_value(const char *object, FfOperation operation,
+FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
 		FcValue value)
 {
 	FfCondition *condition = tyrant_alloc(sizeof(*condition));
@@ -43,7 +44,7 @@ FfCondition *ff_compare_value(const char *object, FfOperation operation,
 		.value.comparison = (FfComparison){
 			.object = object,
 			.value = value,
-			.operation = operation
+			.operator = operator
 		},
 
 		.ref_count = 1
@@ -51,7 +52,7 @@ FfCondition *ff_compare_value(const char *object, FfOperation operation,
 	return condition;
 }
 
-FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
+FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
 		FfCondition *q)
 {
 	FfCondition *condition = tyrant_alloc(sizeof(*condition));
@@ -69,10 +70,10 @@ FfCondition *ff_compose(FfCondition *p, FfTruthTable truth_table,
 
 	*condition = (FfCondition){
 		.type = FF_COMPOSITION,
-		.value.composition = (FfComposition){
+		.value.composition = (FfLogicalComposition){
 			.p = p,
 			.q = q,
-			.truth_table = truth_table
+			.operator = operator
 		},
 		.ref_count = 1
 	};
@@ -86,10 +87,10 @@ err_exit:
 	return NULL;
 }
 
-FfCondition *ff_compose_unref(FfCondition *p, FfTruthTable truth_table,
+FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator operator,
 		FfCondition *q)
 {
-	FfCondition *condition = ff_compose(p, truth_table, q);
+	FfCondition *condition = ff_compose(p, operator, q);
 
 	ff_condition_unref(p);
 	ff_condition_unref(q);
@@ -380,18 +381,18 @@ err_exit:
 	return NULL;
 }
 
-bool ff_truth_table_eval(FfTruthTable truth_table, bool p, bool q)
+bool ff_eval_logical_operation(FfLogicalOperator operator, bool p, bool q)
 {
 	if (p && q) {
-		return truth_table.pt_qt;
+		return operator.pt_qt;
 	}
 	if (p && !q) {
-		return truth_table.pt_qf;
+		return operator.pt_qf;
 	}
 	if (!p && q) {
-		return truth_table.pf_qt;
+		return operator.pf_qt;
 	}
-	return truth_table.pf_qf;
+	return operator.pf_qf;
 }
 
 bool test_comparison(FfComparison comparison, FcPattern *pattern)
@@ -405,19 +406,20 @@ bool test_comparison(FfComparison comparison, FcPattern *pattern)
 	return test_comparison_for_value(comparison, value);
 }
 
-bool test_composition(FfComposition composition, FcPattern *pattern)
+bool test_composition(FfLogicalComposition composition, FcPattern *pattern)
 {
 	bool p_passed = ff_condition_test_fc_pattern(composition.p, pattern);
 	bool q_passed = ff_condition_test_fc_pattern(composition.q, pattern);
 
-	return ff_truth_table_eval(composition.truth_table, p_passed, q_passed);
+	return ff_eval_logical_operation(composition.operator, p_passed,
+			q_passed);
 }
 
 bool test_comparison_for_value(FfComparison comparison, FcValue value)
 {
 	FcValue a = value;
 	FcValue b = comparison.value;
-	FfOperation operation = comparison.operation;
+	FfRelationalOperator operator = comparison.operator;
 
 	bool a_is_real = a.type == FcTypeInteger || a.type == FcTypeDouble;
 	bool b_is_real = b.type == FcTypeInteger || b.type == FcTypeDouble;
@@ -425,7 +427,7 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		double a_d = a.type == FcTypeDouble ? a.u.d : a.u.i;
 		double b_d = b.type == FcTypeDouble ? b.u.d : b.u.i;
 
-		switch (operation) {
+		switch (operator) {
 		case FF_NOT_EQUAL:
 			return a_d != b_d;
 		case FF_EQUAL:
@@ -441,7 +443,7 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		}
 	}
 
-	switch (operation) {
+	switch (operator) {
 	case FF_NOT_EQUAL:
 		return !FcValueEqual(a, b);
 	case FF_EQUAL:
