@@ -151,9 +151,9 @@ FfList ff_list_create(int *ret_status)
 	return ff_list_create_with_cap(8, ret_status);
 }
 
-FfList ff_list_create_with_cap(int cap, int *ret_status)
+FfList ff_list_create_with_cap(int init_cap, int *ret_status)
 {
-	FfCondition **conditions = TYRANT_ALLOC_ARR(conditions, cap);
+	FfCondition **conditions = TYRANT_ALLOC_ARR(conditions, init_cap);
 	if (conditions == NULL) {
 		*ret_status = FF_FAILURE;
 	}
@@ -161,7 +161,7 @@ FfList ff_list_create_with_cap(int cap, int *ret_status)
 	*ret_status = FF_SUCCESS;
 	return (FfList){
 		.conditions = conditions,
-		.cap = cap,
+		.cap = init_cap,
 		.len = 0
 	};
 }
