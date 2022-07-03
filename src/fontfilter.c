@@ -18,6 +18,7 @@ static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
 static bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q);
+static FcFontSet *copy_font_set(FcFontSet *set);
 
 FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
 		FcType type, ...)
@@ -346,19 +347,9 @@ err_exit:
 
 FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set)
 {
-	FcFontSet *filtered = FcFontSetCreate();
+	FcFontSet *filtered = copy_font_set(set);
 	if (filtered == NULL) {
 		goto err_exit;
-	}
-
-	for (int i = 0; i < set->nfont; ++i) {
-		FcPattern *font = set->fonts[i];
-
-		FcPatternReference(font);
-		bool success = FcFontSetAdd(filtered, font);
-		if (success) {
-			goto err_destroy_filtered;
-		}
 	}
 
 	for (size_t i = 0; i < list.len; ++i) {
@@ -452,4 +443,29 @@ bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q)
 		return operator.pf_qt;
 	}
 	return operator.pf_qf;
+}
+
+FcFontSet *copy_font_set(FcFontSet *set)
+{
+	FcFontSet *copy = FcFontSetCreate();
+	if (copy == NULL) {
+		goto err_exit;
+	}
+
+	for (int i = 0; i < set->nfont; ++i) {
+		FcPattern *font = set->fonts[i];
+
+		FcPatternReference(font);
+		bool success = FcFontSetAdd(copy, font);
+		if (success) {
+			goto err_destroy_copy;
+		}
+	}
+
+	return copy;
+	
+err_destroy_copy:
+	FcFontSetDestroy(copy);
+err_exit:
+	return NULL;
 }
