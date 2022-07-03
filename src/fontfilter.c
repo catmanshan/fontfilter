@@ -352,7 +352,7 @@ FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set)
 		goto err_exit;
 	}
 
-	for (size_t i = 0; i < list.len; ++i) {
+	for (size_t i = 0; i < list.len && filtered->nfont > 1; ++i) {
 		FfCondition *condition = list.conditions[i];
 		FcFontSet *test_set = ff_condition_filter(condition, filtered);
 		if (test_set == NULL) {
