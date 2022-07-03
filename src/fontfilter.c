@@ -18,12 +18,12 @@ static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
 
-FfCondition *ff_compare(const char *object, FfRelationalOperator operator, ...)
+FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
+		FcType type, ...)
 {
 	va_list va;
-	va_start(va, operator);
+	va_start(va, type);
 
-	FcType type = FcNameGetObjectType(object)->type;
 	FcValue value = ff_create_fc_value_va(type, va);
 
 	va_end(va);

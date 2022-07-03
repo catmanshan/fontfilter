@@ -86,7 +86,8 @@ struct FfList {
 	size_t cap;
 };
 
-FfCondition *ff_compare(const char *object, FfRelationalOperator operator, ...);
+FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
+		FcType type, ...);
 FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
 		FcValue value);
 FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,

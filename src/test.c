@@ -9,10 +9,11 @@
 int main()
 {
 	FfCondition *not_proport = ff_compare(FC_SPACING, FF_NOT_EQUAL,
-			FC_PROPORTIONAL);
-	FfCondition *bold = ff_compare_value(FC_WEIGHT, FF_GREATER_THAN_EQUAL,
-			ff_create_fc_value(FcTypeInteger, FC_WEIGHT_BOLD));
-	FfCondition *italic = ff_compare(FC_SLANT, FF_EQUAL, FC_SLANT_ITALIC);
+			FcTypeInteger, FC_PROPORTIONAL);
+	FfCondition *bold = ff_compare(FC_WEIGHT, FF_GREATER_THAN_EQUAL,
+			FcTypeInteger, FC_WEIGHT_BOLD);
+	FfCondition *italic = ff_compare(FC_SLANT, FF_EQUAL, FcTypeInteger,
+			FC_SLANT_ITALIC);
 
 	assert(not_proport && bold && italic);
 
