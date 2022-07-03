@@ -10,6 +10,24 @@
 #define FF_SUCCESS 0
 #define FF_FAILURE (-1)
 
+//                                          PTQT PTQF PFQT PFQF
+#define FF_ALWAYS_FALSE (FfLogicalOperator){   0,   0,   0,   0 }
+#define FF_NOR          (FfLogicalOperator){   0,   0,   0,   1 }
+#define FF_Q_NOT_P      (FfLogicalOperator){   0,   0,   1,   0 }
+#define FF_NOT_P        (FfLogicalOperator){   0,   0,   1,   1 }
+#define FF_P_NOT_Q      (FfLogicalOperator){   0,   1,   0,   0 }
+#define FF_NOT_Q        (FfLogicalOperator){   0,   1,   0,   1 }
+#define FF_XOR          (FfLogicalOperator){   0,   1,   1,   0 }
+#define FF_NAND         (FfLogicalOperator){   0,   1,   1,   1 }
+#define FF_AND          (FfLogicalOperator){   1,   0,   0,   0 }
+#define FF_XNOR         (FfLogicalOperator){   1,   0,   0,   1 }
+#define FF_Q            (FfLogicalOperator){   1,   0,   1,   0 }
+#define FF_IF_P_THEN_Q  (FfLogicalOperator){   1,   0,   1,   1 }
+#define FF_P            (FfLogicalOperator){   1,   1,   0,   0 }
+#define FF_IF_Q_THEN_P  (FfLogicalOperator){   1,   1,   0,   1 }
+#define FF_OR           (FfLogicalOperator){   1,   1,   1,   0 }
+#define FF_ALWAYS_TRUE  (FfLogicalOperator){   1,   1,   1,   1 }
+
 typedef enum FfConditionType {
 	FF_COMPARISON,
 	FF_COMPOSITION
@@ -37,24 +55,6 @@ struct FfLogicalOperator {
 	bool pf_qt;
 	bool pf_qf;
 };
-
-//                                           PTQT  PTQF  PFQT  PFQF
-#define FF_ALWAYS_FALSE (FfLogicalOperator){    0,    0,    0,    0 }
-#define FF_NOR          (FfLogicalOperator){    0,    0,    0,    1 }
-#define FF_Q_NOT_P      (FfLogicalOperator){    0,    0,    1,    0 }
-#define FF_NOT_P        (FfLogicalOperator){    0,    0,    1,    1 }
-#define FF_P_NOT_Q      (FfLogicalOperator){    0,    1,    0,    0 }
-#define FF_NOT_Q        (FfLogicalOperator){    0,    1,    0,    1 }
-#define FF_XOR          (FfLogicalOperator){    0,    1,    1,    0 }
-#define FF_NAND         (FfLogicalOperator){    0,    1,    1,    1 }
-#define FF_AND          (FfLogicalOperator){    1,    0,    0,    0 }
-#define FF_XNOR         (FfLogicalOperator){    1,    0,    0,    1 }
-#define FF_Q            (FfLogicalOperator){    1,    0,    1,    0 }
-#define FF_IF_P_THEN_Q  (FfLogicalOperator){    1,    0,    1,    1 }
-#define FF_P            (FfLogicalOperator){    1,    1,    0,    0 }
-#define FF_IF_Q_THEN_P  (FfLogicalOperator){    1,    1,    0,    1 }
-#define FF_OR           (FfLogicalOperator){    1,    1,    1,    0 }
-#define FF_ALWAYS_TRUE  (FfLogicalOperator){    1,    1,    1,    1 }
 
 struct FfComparison {
 	const char *object;
