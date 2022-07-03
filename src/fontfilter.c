@@ -17,6 +17,7 @@ static bool test_comparison(FfComparison comparison, FcPattern *pattern);
 static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
+static bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q);
 
 FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
 		FcType type, ...)
@@ -381,20 +382,6 @@ err_exit:
 	return NULL;
 }
 
-bool ff_eval_logical_operation(FfLogicalOperator operator, bool p, bool q)
-{
-	if (p && q) {
-		return operator.pt_qt;
-	}
-	if (p && !q) {
-		return operator.pt_qf;
-	}
-	if (!p && q) {
-		return operator.pf_qt;
-	}
-	return operator.pf_qf;
-}
-
 bool test_comparison(FfComparison comparison, FcPattern *pattern)
 {
 	FcValue value;
@@ -411,7 +398,7 @@ bool test_composition(FfLogicalComposition composition, FcPattern *pattern)
 	bool p_passed = ff_condition_test_fc_pattern(composition.p, pattern);
 	bool q_passed = ff_condition_test_fc_pattern(composition.q, pattern);
 
-	return ff_eval_logical_operation(composition.operator, p_passed,
+	return eval_logical_operation(composition.operator, p_passed,
 			q_passed);
 }
 
@@ -451,4 +438,18 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 	default:
 		return false;
 	}
+}
+
+bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q)
+{
+	if (p && q) {
+		return operator.pt_qt;
+	}
+	if (p && !q) {
+		return operator.pt_qf;
+	}
+	if (!p && q) {
+		return operator.pf_qt;
+	}
+	return operator.pf_qf;
 }

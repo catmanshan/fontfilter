@@ -116,6 +116,4 @@ FcFontSet *ff_list_filter(FfList list, FcFontSet *set);
 
 FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set);
 
-bool ff_eval_logical_operation(FfLogicalOperator operator, bool p, bool q);
-
 #endif // fontfilter_h
