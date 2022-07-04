@@ -102,7 +102,7 @@ FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator operator,
 
 FfCondition *ff_condition_ref(FfCondition *condition)
 {
-	if (inc_ref_count(&condition->ref_count)) {
+	if (condition != NULL && inc_ref_count(&condition->ref_count)) {
 		return condition;
 	}
 
@@ -111,7 +111,9 @@ FfCondition *ff_condition_ref(FfCondition *condition)
 
 void ff_condition_unref(FfCondition *condition)
 {
-	if (dec_ref_count(&condition->ref_count) && condition->ref_count == 0) {
+	if (condition != NULL
+			&& dec_ref_count(&condition->ref_count)
+			&& condition->ref_count == 0) {
 		destroy_condition(condition);
 	}
 }
@@ -200,7 +202,11 @@ bool ff_list_add(FfList *list, FfCondition *condition)
 		list->cap = cap;
 	}
 
-	list->conditions[list->len++] = ff_condition_ref(condition);
+	if (ff_condition_ref(condition) == NULL) {
+		return false;
+	}
+
+	list->conditions[list->len++] = condition;
 
 	return true;
 }
