@@ -463,7 +463,7 @@ FcFontSet *copy_font_set(FcFontSet *set)
 
 		FcPatternReference(font);
 		bool success = FcFontSetAdd(copy, font);
-		if (success) {
+		if (!success) {
 			goto err_destroy_copy;
 		}
 	}
