@@ -365,9 +365,12 @@ FcFontSet *ff_list_filter_soft(FfList list, FcFontSet *set)
 		}
 
 		if (test_set->nfont > 0) {
-			FcFontSetDestroy(filtered);
+			FcFontSet *swp = filtered;
 			filtered = test_set;
+			test_set = swp;
 		}
+
+		FcFontSetDestroy(test_set);
 	}
 
 	return filtered;
