@@ -17,10 +17,10 @@ static bool test_comparison(FfComparison comparison, FcPattern *pattern);
 static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
-static bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q);
+static bool eval_logical_operation(FfLogicalOperator oper, bool p, bool q);
 static FcFontSet *copy_font_set(FcFontSet *set);
 
-FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
+FfCondition *ff_compare(const char *object, FfRelationalOperator oper,
 		FcType type, ...)
 {
 	va_list va;
@@ -30,10 +30,10 @@ FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
 
 	va_end(va);
 
-	return ff_compare_value(object, operator, value);
+	return ff_compare_value(object, oper, value);
 }
 
-FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
+FfCondition *ff_compare_value(const char *object, FfRelationalOperator oper,
 		FcValue value)
 {
 	FfCondition *condition = tyrant_alloc(sizeof(*condition));
@@ -46,7 +46,7 @@ FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
 		.value.comparison = (FfComparison){
 			.object = object,
 			.value = value,
-			.operator = operator
+			.oper = oper
 		},
 
 		.ref_count = 1
@@ -54,8 +54,7 @@ FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
 	return condition;
 }
 
-FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
-		FfCondition *q)
+FfCondition *ff_compose(FfCondition *p, FfLogicalOperator oper, FfCondition *q)
 {
 	FfCondition *condition = tyrant_alloc(sizeof(*condition));
 	if (condition == NULL) {
@@ -75,7 +74,7 @@ FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
 		.value.composition = (FfLogicalComposition){
 			.p = p,
 			.q = q,
-			.operator = operator
+			.oper = oper
 		},
 		.ref_count = 1
 	};
@@ -89,10 +88,10 @@ err_exit:
 	return NULL;
 }
 
-FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator operator,
+FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator oper,
 		FfCondition *q)
 {
-	FfCondition *condition = ff_compose(p, operator, q);
+	FfCondition *condition = ff_compose(p, oper, q);
 
 	ff_condition_unref(p);
 	ff_condition_unref(q);
@@ -395,15 +394,14 @@ bool test_composition(FfLogicalComposition composition, FcPattern *pattern)
 	bool p_passed = ff_condition_test_fc_pattern(composition.p, pattern);
 	bool q_passed = ff_condition_test_fc_pattern(composition.q, pattern);
 
-	return eval_logical_operation(composition.operator, p_passed,
-			q_passed);
+	return eval_logical_operation(composition.oper, p_passed, q_passed);
 }
 
 bool test_comparison_for_value(FfComparison comparison, FcValue value)
 {
 	FcValue a = value;
 	FcValue b = comparison.value;
-	FfRelationalOperator operator = comparison.operator;
+	FfRelationalOperator oper = comparison.oper;
 
 	bool a_is_real = a.type == FcTypeInteger || a.type == FcTypeDouble;
 	bool b_is_real = b.type == FcTypeInteger || b.type == FcTypeDouble;
@@ -411,7 +409,7 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		double a_d = a.type == FcTypeDouble ? a.u.d : a.u.i;
 		double b_d = b.type == FcTypeDouble ? b.u.d : b.u.i;
 
-		switch (operator) {
+		switch (oper) {
 		case FF_NOT_EQUAL:
 			return a_d != b_d;
 		case FF_EQUAL:
@@ -427,7 +425,7 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		}
 	}
 
-	switch (operator) {
+	switch (oper) {
 	case FF_NOT_EQUAL:
 		return !FcValueEqual(a, b);
 	case FF_EQUAL:
@@ -437,18 +435,18 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 	}
 }
 
-bool eval_logical_operation(FfLogicalOperator operator, bool p, bool q)
+bool eval_logical_operation(FfLogicalOperator oper, bool p, bool q)
 {
 	if (p && q) {
-		return operator.pt_qt;
+		return oper.pt_qt;
 	}
 	if (p && !q) {
-		return operator.pt_qf;
+		return oper.pt_qf;
 	}
 	if (!p && q) {
-		return operator.pf_qt;
+		return oper.pf_qt;
 	}
-	return operator.pf_qf;
+	return oper.pf_qf;
 }
 
 FcFontSet *copy_font_set(FcFontSet *set)

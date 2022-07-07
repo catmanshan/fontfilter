@@ -59,11 +59,11 @@ struct FfLogicalOperator {
 struct FfComparison {
 	const char *object;
 	FcValue value;
-	FfRelationalOperator operator;
+	FfRelationalOperator oper;
 };
 
 struct FfLogicalComposition {
-	FfLogicalOperator operator;
+	FfLogicalOperator oper;
 	FfCondition *p;
 	FfCondition *q;
 };
@@ -88,17 +88,16 @@ struct FfList {
 
 /// Converts the (first and only) variadic argument to an `FcValue` with the
 /// given type and calls `ff_compare_value()`.
-FfCondition *ff_compare(const char *object, FfRelationalOperator operator,
+FfCondition *ff_compare(const char *object, FfRelationalOperator oper,
 		FcType type, ...);
 
 /// Creates a condition representing a comparison between `value` and the value
 /// which is associated with the property `object` for some pattern.
-FfCondition *ff_compare_value(const char *object, FfRelationalOperator operator,
+FfCondition *ff_compare_value(const char *object, FfRelationalOperator oper,
 		FcValue value);
 
 /// Creates a condition representing a logical operation between two conditions.
-FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
-		FfCondition *q);
+FfCondition *ff_compose(FfCondition *p, FfLogicalOperator oper, FfCondition *q);
 
 /// Calls `ff_compose()` and decrements the reference counts of `p` and `q`.
 /**
@@ -108,7 +107,7 @@ FfCondition *ff_compose(FfCondition *p, FfLogicalOperator operator,
  * Reference counts are decremented unconditionally (i.e. even if `ff_compose()`
  * fails).
  */
-FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator operator,
+FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator oper,
 		FfCondition *q);
 
 /// Increments `condition`'s reference count.
