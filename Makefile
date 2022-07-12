@@ -11,34 +11,35 @@ OBJ_DIR = $(OUT_DIR)/obj
 LIB_DIR = $(OUT_DIR)/lib
 BIN_DIR = $(OUT_DIR)/bin
 
+OPTIM_debug := -g
+OPTIM_release := -O3
+OPTIM = $(OPTIM_$(TARGET))
+
+DEBUG_debug = -fsanitize=address,undefined
+DEBUG = $(DEBUG_$(TARGET))
+
 .PHONY: all
 all: debug
 
 .PHONY: debug
-debug: DEBUG = -fsanitize=address,undefined
-debug: TYRANT_TARGET = debug
-debug: OPTIM := -g
+debug: TARGET = debug
 debug: dirs $(BIN_DIR)/test
 
 .PHONY: release
-release: OPTIM := -O3
+release: TARGET = release
 release: DEFINES += -DNDEBUG
-release: TYRANT_TARGET = release
 release: dirs $(BIN_DIR)/test
 
 .PHONY: library
 library: library-release
 
 .PHONY: library-debug
-library-debug: DEBUG = -fsanitize=address,undefined
-library-debug: TYRANT_TARGET = debug
-library-debug: OPTIM := -g
+library-debug: TARGET = debug
 library-debug: dirs $(LIB_DIR)/libfontfilter.a
 
 .PHONY: library-release
-library-release: OPTIM := -O3
+library-release: TARGET = release
 library-release: DEFINES += -DNDEBUG
-library-release: TYRANT_TARGET = release
 library-release: dirs $(LIB_DIR)/libfontfilter.a
 
 # test:
@@ -65,7 +66,7 @@ $(OBJ_DIR)/fontfilter.o: src/fontfilter.c $(LIB_HEADERS)
 # tyrant
 
 $(LIB_DIR)/libtyrant.a: tyrant/src/*
-	make -C tyrant $(TYRANT_TARGET) \
+	make -C tyrant $(TARGET) \
 		OBJ_DIR=../$(OBJ_DIR) \
 		LIB_DIR=../$(LIB_DIR)
 
