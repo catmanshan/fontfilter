@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 #include <fontconfig/fontconfig.h>
 
@@ -17,6 +18,7 @@ static bool test_comparison(FfComparison comparison, FcPattern *pattern);
 static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
+static bool contains(FcValue a, FcValue b);
 static bool eval_logical_operation(FfLogicalOperator oper, bool p, bool q);
 static FcFontSet *copy_font_set(FcFontSet *set);
 
@@ -414,8 +416,10 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 
 		switch (oper) {
 		case FF_NOT_EQUAL:
+		case FF_DOES_NOT_CONTAIN:
 			return a_d != b_d;
 		case FF_EQUAL:
+		case FF_CONTAINS:
 			return a_d == b_d;
 		case FF_LESS_THAN:
 			return a_d < b_d;
@@ -433,9 +437,53 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		return !FcValueEqual(a, b);
 	case FF_EQUAL:
 		return FcValueEqual(a, b);
+	case FF_DOES_NOT_CONTAIN:
+		return !contains(a, b);
+	case FF_CONTAINS:
+		return contains(a, b);
 	default:
 		return false;
 	}
+}
+
+bool contains(FcValue a, FcValue b)
+{
+	if (a.type == FcTypeString && b.type == FcTypeString) {
+		const char *a_s = (char *)a.u.s;
+		const char *b_s = (char *)b.u.s;
+
+		return strstr(a_s, b_s) != NULL;
+	}
+
+	bool b_is_real = b.type == FcTypeInteger || b.type == FcTypeDouble;
+	if (b_is_real && a.type == FcTypeRange) {
+		double from;
+		double to;
+		bool success = FcRangeGetDouble(a.u.r, &from, &to);
+		if (!success) {
+			return false;
+		}
+
+		double b_d = b.type == FcTypeInteger ? (double)b.u.i : b.u.d;
+
+		return b_d >= from && b_d <= to;
+	}
+
+	if (a.type == FcTypeRange && b.type == FcTypeRange) {
+		double a_from;
+		double a_to;
+		double b_from;
+		double b_to;
+		bool success = FcRangeGetDouble(a.u.r, &a_from, &a_to)
+				& FcRangeGetDouble(b.u.r, &b_from, &b_to);
+		if (!success) {
+			return false;
+		}
+
+		return b_from >= a_from && b_to <= a_to;
+	}
+
+	return false;
 }
 
 bool eval_logical_operation(FfLogicalOperator oper, bool p, bool q)
