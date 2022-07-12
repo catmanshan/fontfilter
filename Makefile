@@ -10,20 +10,10 @@ DEPS_CFLAGS := `pkgconf --cflags fontconfig | sed 's/-I/-isystem/g'` -Ityrant/sr
 all: debug
 
 .PHONY: debug
-debug: debug-sanitize
-
-.PHONY: debug-sanitize
-debug-sanitize: DEBUG = -fsanitize=address,undefined
-debug-sanitize: TYRANT_TARGET = debug-sanitize
-debug-sanitize: debug-common
-
-.PHONY: debug-no-sanitize
-debug-no-sanitize: TYRANT_TARGET = debug-no-sanitize
-debug-no-sanitize: debug-common
-
-.PHONY: debug-common
-debug-common: OPTIM := -g
-debug-common: dirs bin/test
+debug: DEBUG = -fsanitize=address,undefined
+debug: TYRANT_TARGET = debug
+debug: OPTIM := -g
+debug: dirs bin/test
 
 .PHONY: release
 release: OPTIM := -O3
