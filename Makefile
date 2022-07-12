@@ -26,6 +26,21 @@ release: DEFINES += -DNDEBUG
 release: TYRANT_TARGET = release
 release: dirs $(BIN_DIR)/test
 
+.PHONY: library
+library: library-release
+
+.PHONY: library-debug
+library-debug: DEBUG = -fsanitize=address,undefined
+library-debug: TYRANT_TARGET = debug
+library-debug: OPTIM := -g
+library-debug: dirs $(LIB_DIR)/libfontfilter.a
+
+.PHONY: library-release
+library-release: OPTIM := -O3
+library-release: DEFINES += -DNDEBUG
+library-release: TYRANT_TARGET = release
+library-release: dirs $(LIB_DIR)/libfontfilter.a
+
 # test:
 
 $(BIN_DIR)/test: $(OBJ_DIR)/test.o $(LIB_DIR)/libfontfilter.a $(LIB_DIR)/libtyrant.a
