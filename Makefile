@@ -3,7 +3,7 @@ CFLAGS = $(WFLAGS) $(OPTIM)
 
 WFLAGS  := -Wall -Wextra -Wpedantic --std=c99
 
-DEPS_LIBS := `pkgconf --libs fontconfig` -Ltyrant/lib -ltyrant
+DEPS_LIBS := `pkgconf --libs fontconfig` -ltyrant
 DEPS_CFLAGS := `pkgconf --cflags fontconfig | sed 's/-I/-isystem/g'` -Ityrant/src
 
 OUT_DIR := .
@@ -28,7 +28,7 @@ release: dirs $(BIN_DIR)/test
 
 # test:
 
-$(BIN_DIR)/test: $(OBJ_DIR)/test.o $(LIB_DIR)/libfontfilter.a tyrant/lib/libtyrant.a
+$(BIN_DIR)/test: $(OBJ_DIR)/test.o $(LIB_DIR)/libfontfilter.a $(LIB_DIR)/libtyrant.a
 	$(CC) -o $@ $^ -L$(LIB_DIR) -lfontfilter $(DEPS_LIBS) $(DEBUG) $(DEFINES)
 
 $(OBJ_DIR)/test.o: src/test.c $(LIB_HEADERS)
@@ -49,8 +49,10 @@ $(OBJ_DIR)/fontfilter.o: src/fontfilter.c $(LIB_HEADERS)
 
 # tyrant
 
-tyrant/lib/libtyrant.a: tyrant/src/*
-	make -C tyrant $(TYRANT_TARGET)
+$(LIB_DIR)/libtyrant.a: tyrant/src/*
+	make -C tyrant $(TYRANT_TARGET) \
+		OBJ_DIR=../$(OBJ_DIR) \
+		LIB_DIR=../$(LIB_DIR)
 
 # dirs
 
