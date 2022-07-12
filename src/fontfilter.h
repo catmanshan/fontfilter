@@ -41,7 +41,9 @@ typedef enum FfRelationalOperator {
 	FF_LESS_THAN_EQUAL,
 	FF_GREATER_THAN_EQUAL,
 	FF_CONTAINS,
-	FF_DOES_NOT_CONTAIN
+	FF_DOES_NOT_CONTAIN,
+	FF_CONTAINED_IN,
+	FF_NOT_CONTAINED_IN
 } FfRelationalOperator;
 
 typedef struct FfLogicalOperator FfLogicalOperator;

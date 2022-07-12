@@ -417,9 +417,11 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		switch (oper) {
 		case FF_NOT_EQUAL:
 		case FF_DOES_NOT_CONTAIN:
+		case FF_NOT_CONTAINED_IN:
 			return a_d != b_d;
 		case FF_EQUAL:
 		case FF_CONTAINS:
+		case FF_CONTAINED_IN:
 			return a_d == b_d;
 		case FF_LESS_THAN:
 			return a_d < b_d;
@@ -441,6 +443,10 @@ bool test_comparison_for_value(FfComparison comparison, FcValue value)
 		return !contains(a, b);
 	case FF_CONTAINS:
 		return contains(a, b);
+	case FF_NOT_CONTAINED_IN:
+		return !contains(b, a);
+	case FF_CONTAINED_IN:
+		return contains(b, a);
 	default:
 		return false;
 	}
