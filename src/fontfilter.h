@@ -30,7 +30,8 @@
 
 typedef enum FfConditionType {
 	FF_COMPARISON,
-	FF_COMPOSITION
+	FF_COMPOSITION,
+	FF_CHAR_REQUIREMENT
 } FfConditionType;
 
 typedef enum FfRelationalOperator {
@@ -49,6 +50,7 @@ typedef enum FfRelationalOperator {
 typedef struct FfLogicalOperator FfLogicalOperator;
 typedef struct FfComparison FfComparison;
 typedef struct FfLogicalComposition FfLogicalComposition;
+typedef struct FfCharRequirement FfCharRequirement;
 typedef union FfConditionValue FfConditionValue;
 typedef struct FfCondition FfCondition;
 typedef struct FfList FfList;
@@ -72,9 +74,14 @@ struct FfLogicalComposition {
 	FfCondition *q;
 };
 
+struct FfCharRequirement {
+	FcChar32 c;
+};
+
 union FfConditionValue {
 	FfComparison comparison;
 	FfLogicalComposition composition;
+	FfCharRequirement char_requirement;
 };
 
 struct FfCondition {
@@ -102,6 +109,10 @@ FfCondition *ff_compare_value(const char *object, FfRelationalOperator oper,
 
 /// Creates a condition representing a logical operation between two conditions.
 FfCondition *ff_compose(FfCondition *p, FfLogicalOperator oper, FfCondition *q);
+
+/// Creates a condition representing a requirement that a pattern's charset
+/// contains `c`.
+FfCondition *ff_require_char(FcChar32 c);
 
 /// Calls `ff_compose()` and decrements the reference counts of `p` and `q`.
 /**

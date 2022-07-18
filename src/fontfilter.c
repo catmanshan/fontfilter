@@ -17,6 +17,8 @@ static bool dec_ref_count(size_t *ref_count);
 static bool test_comparison(FfComparison comparison, FcPattern *pattern);
 static bool test_composition(FfLogicalComposition composition,
 		FcPattern *pattern);
+static bool test_char_requirement(FfCharRequirement char_requirement,
+		FcPattern *pattern);
 static bool test_comparison_for_value(FfComparison comparison, FcValue value);
 static bool contains(FcValue a, FcValue b);
 static bool eval_logical_operation(FfLogicalOperator oper, bool p, bool q);
@@ -88,6 +90,21 @@ err_free_condition:
 	tyrant_free(condition);
 err_exit:
 	return NULL;
+}
+
+FfCondition *ff_require_char(FcChar32 c)
+{
+	FfCondition *condition = tyrant_alloc(sizeof(*condition));
+	if (condition == NULL) {
+		return NULL;
+	}
+
+	*condition = (FfCondition){
+		.type = FF_CHAR_REQUIREMENT,
+		.value.char_requirement = (FfCharRequirement){ .c = c },
+		.ref_count = 1
+	};
+	return condition;
 }
 
 FfCondition *ff_compose_unref(FfCondition *p, FfLogicalOperator oper,
@@ -282,6 +299,9 @@ bool ff_condition_test_fc_pattern(FfCondition *condition, FcPattern *pattern)
 		return test_comparison(condition->value.comparison, pattern);
 	case FF_COMPOSITION:
 		return test_composition(condition->value.composition, pattern);
+	case FF_CHAR_REQUIREMENT:
+		return test_char_requirement(condition->value.char_requirement,
+				pattern);
 	default:
 		return false;
 	}
@@ -400,6 +420,18 @@ bool test_composition(FfLogicalComposition composition, FcPattern *pattern)
 	bool q_passed = ff_condition_test_fc_pattern(composition.q, pattern);
 
 	return eval_logical_operation(composition.oper, p_passed, q_passed);
+}
+
+bool test_char_requirement(FfCharRequirement char_requirement,
+		FcPattern *pattern)
+{
+	FcCharSet *cs;
+	FcResult result = FcPatternGetCharSet(pattern, FC_CHARSET, 0, &cs);
+	if (result != FcResultMatch) {
+		return false;
+	}
+
+	return FcCharSetHasChar(cs, char_requirement.c);
 }
 
 bool test_comparison_for_value(FfComparison comparison, FcValue value)
