@@ -489,6 +489,10 @@ bool contains(FcValue a, FcValue b)
 		return b_from >= a_from && b_to <= a_to;
 	}
 
+	if (a.type == FcTypeCharSet && b.type == FcTypeCharSet) {
+		return FcCharSetIsSubset(b.u.c, a.u.c);
+	}
+
 	return false;
 }
 
