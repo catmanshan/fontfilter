@@ -4,6 +4,7 @@
 
 !/.gitignore
 !/.gitmodules
+!/README.md
 !/Makefile
 !/src/**
 !/tyrant/**
