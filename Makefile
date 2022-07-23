@@ -1,7 +1,7 @@
 CC := gcc
 CFLAGS = $(WFLAGS) $(OPTIM)
 
-WFLAGS  := -Wall -Wextra -Wpedantic --std=c99
+WFLAGS := -Wall -Wextra -Wpedantic --std=c99
 
 LFLAGS = -L$(LIB_DIR) \
 	  -lfontfilter \
@@ -28,12 +28,12 @@ all: debug
 
 .PHONY: debug
 debug: TARGET = debug
-debug: dirs $(BIN_DIR)/test
+debug: dirs $(BIN_DIR)/examples
 
 .PHONY: release
 release: TARGET = release
 release: DEFINES += -DNDEBUG
-release: dirs $(BIN_DIR)/test
+release: dirs $(BIN_DIR)/examples
 
 .PHONY: library
 library: library-release
@@ -47,13 +47,13 @@ library-release: TARGET = release
 library-release: DEFINES += -DNDEBUG
 library-release: dirs $(LIB_DIR)/libfontfilter.a
 
-# test:
+# examples:
 
-$(BIN_DIR)/test: $(OBJ_DIR)/test.o $(LIB_DIR)/libfontfilter.a $(LIB_DIR)/libtyrant.a
+$(BIN_DIR)/examples: $(OBJ_DIR)/examples.o $(LIB_DIR)/libfontfilter.a $(LIB_DIR)/libtyrant.a
 	$(CC) -o $@ $^ $(LFLAGS) $(DEBUG) $(DEFINES)
 
-$(OBJ_DIR)/test.o: src/test.c $(LIB_HEADERS)
-	$(CC) -c -o $@ $< $(CFLAGS) $(DEPS_CFLAGS) $(DEBUG) $(DEFINES)
+$(OBJ_DIR)/examples.o: examples.c $(LIB_HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEPS_CFLAGS) $(DEBUG) $(DEFINES) -Isrc
 
 # fontfilter
 
