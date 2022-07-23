@@ -200,7 +200,7 @@ bool ff_list_add(FfList *list, FfCondition *condition)
 {
 	if (list->len == list->cap) {
 		if (list->cap == ULLONG_MAX) {
-			return NULL;
+			return false;
 		}
 
 		size_t cap;
