@@ -1,7 +1,7 @@
 CC := gcc
 CFLAGS = $(WFLAGS) $(OPTIM)
 
-WFLAGS := -Wall -Wextra -Wpedantic --std=c99
+WFLAGS := -Wall -Wextra -Wpedantic -std=c99
 
 LFLAGS = -L$(LIB_DIR) \
 	  -lfontfilter \
